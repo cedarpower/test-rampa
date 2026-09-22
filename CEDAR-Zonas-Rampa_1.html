@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEDAR · Zonas de entrenamiento</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap');
+
+:root{
+  --pine:#1f3a30;
+  --pine-light:#2f5142;
+  --amber:#c1893f;
+  --amber-light:#e6b877;
+  --cream:#f7f3ea;
+  --paper:#ffffff;
+  --ink:#232d27;
+  --muted:#6f7d74;
+  --line:#e3ddcd;
+  --error:#b4472f;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:'Archivo', Arial, sans-serif;
+  line-height:1.5;
+  padding:32px 16px 64px;
+}
+
+.wrap{
+  max-width:640px;
+  margin:0 auto;
+}
+
+header{
+  margin-bottom:28px;
+}
+
+header h1{
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:700;
+  font-size:1.7rem;
+  color:var(--pine);
+  margin:0 0 4px;
+}
+
+header p{
+  color:var(--muted);
+  font-size:0.92rem;
+  margin:0;
+}
+
+.steps{
+  display:flex;
+  gap:8px;
+  margin-bottom:24px;
+}
+
+.step-dot{
+  flex:1;
+  height:4px;
+  border-radius:2px;
+  background:var(--line);
+}
+
+.step-dot.active{background:var(--amber);}
+.step-dot.done{background:var(--pine-light);}
+
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:28px 28px 26px;
+  box-shadow:0 1px 2px rgba(31,58,48,0.04);
+}
+
+.panel{display:none;}
+.panel.active{display:block;}
+
+h2{
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:600;
+  font-size:1.25rem;
+  color:var(--pine);
+  margin:0 0 18px;
+}
+
+label{
+  display:block;
+  font-size:0.88rem;
+  font-weight:600;
+  color:var(--pine);
+  margin:16px 0 6px;
+}
+
+label.checkbox-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+input[type=number]{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  font-size:1rem;
+  font-family:'Archivo', Arial, sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+
+input[type=number]:focus{
+  outline:none;
+  border-color:var(--amber);
+}
+
+input[type=checkbox]{
+  width:18px;
+  height:18px;
+  accent-color:var(--amber);
+}
+
+.hint{
+  font-size:0.8rem;
+  color:var(--muted);
+  margin-top:4px;
+  font-weight:400;
+}
+
+.error-msg{
+  font-size:0.82rem;
+  color:var(--error);
+  margin-top:10px;
+  display:none;
+}
+
+.protocol-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+}
+
+.protocol-card{
+  border:1.5px solid var(--line);
+  border-radius:10px;
+  padding:14px 10px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+
+.protocol-card:hover{border-color:var(--amber-light);}
+
+.protocol-card.selected{
+  border-color:var(--amber);
+  background:#fbf3e7;
+}
+
+.protocol-card .w{
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:700;
+  font-size:1.3rem;
+  color:var(--pine);
+}
+
+.protocol-card .label{
+  font-size:0.78rem;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.protocol-card .tag{
+  display:none;
+  font-size:0.66rem;
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+  color:var(--amber);
+  font-weight:700;
+  margin-top:4px;
+}
+
+.link-toggle{
+  display:inline-block;
+  font-size:0.82rem;
+  color:var(--amber);
+  font-weight:600;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+.link-toggle:hover{text-decoration:underline;}
+
+.pill-row{
+  display:flex;
+  gap:8px;
+  margin-top:2px;
+}
+
+.pill{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border:1.5px solid var(--line);
+  border-radius:8px;
+  padding:9px 10px;
+  font-size:0.86rem;
+  font-weight:500;
+  cursor:pointer;
+}
+
+.pill input{margin:0; accent-color:var(--amber);}
+
+select{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  font-size:1rem;
+  font-family:'Archivo', Arial, sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+
+.fallback-block{
+  background:var(--cream);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:4px 14px 14px;
+  margin-top:10px;
+}
+
+.duration-box{
+  border-radius:10px;
+  padding:14px 16px;
+  margin:18px 0 6px;
+  background:var(--cream);
+  border:1px solid var(--line);
+}
+
+.duration-time{
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:700;
+  font-size:1.3rem;
+  color:var(--ink);
+}
+
+.duration-msg{
+  font-size:0.82rem;
+  margin-top:2px;
+  color:var(--muted);
+}
+
+.duration-box.duration-ideal{background:#e8f2ea; border-color:#bfdcc6;}
+.duration-box.duration-ideal .duration-time{color:var(--pine);}
+.duration-box.duration-ideal .duration-msg{color:var(--pine-light);}
+
+.duration-box.duration-warn{background:#fbf1df; border-color:#eecea0;}
+.duration-box.duration-warn .duration-time{color:#8a5f22;}
+.duration-box.duration-warn .duration-msg{color:#8a5f22;}
+
+.duration-box.duration-block{background:#fbe9e5; border-color:#eeb9ac;}
+.duration-box.duration-block .duration-time{color:var(--error);}
+.duration-box.duration-block .duration-msg{color:var(--error);}
+
+button:disabled{
+  opacity:0.45;
+  cursor:not-allowed;
+}
+
+.p1-wrap{
+  display:none;
+  padding-top:4px;
+}
+
+.btn-row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:26px;
+  gap:12px;
+}
+
+button{
+  font-family:'Archivo', Arial, sans-serif;
+  font-weight:600;
+  font-size:0.92rem;
+  border-radius:8px;
+  padding:12px 20px;
+  border:none;
+  cursor:pointer;
+  transition:opacity .15s;
+}
+
+button:hover{opacity:0.9;}
+
+.btn-primary{
+  background:var(--pine);
+  color:#fff;
+  margin-left:auto;
+}
+
+.btn-secondary{
+  background:transparent;
+  color:var(--pine);
+  border:1px solid var(--line);
+}
+
+.btn-print{
+  background:var(--amber);
+  color:#fff;
+}
+
+/* results */
+.stat-row{
+  display:flex;
+  gap:12px;
+  margin-bottom:22px;
+}
+
+.stat{
+  flex:1;
+  background:var(--pine);
+  color:#fff;
+  border-radius:10px;
+  padding:16px 14px;
+}
+
+.stat .num{
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:700;
+  font-size:1.5rem;
+}
+
+.stat .lbl{
+  font-size:0.74rem;
+  opacity:0.85;
+  margin-top:2px;
+}
+
+.stat.amber{background:var(--amber);}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:22px;
+  font-size:0.92rem;
+}
+
+table caption{
+  text-align:left;
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:600;
+  color:var(--pine);
+  font-size:1.02rem;
+  margin-bottom:8px;
+  caption-side:top;
+}
+
+th, td{
+  text-align:left;
+  padding:9px 8px;
+  border-bottom:1px solid var(--line);
+}
+
+th{
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+  color:var(--muted);
+  font-weight:600;
+}
+
+td.zone-name{font-weight:600; color:var(--ink);}
+td.zone-note{color:var(--muted); font-size:0.8rem;}
+
+.formula-note{
+  font-size:0.78rem;
+  color:var(--muted);
+  margin:-14px 0 22px;
+}
+
+.footer-actions{
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+}
+
+@media (max-width:480px){
+  .protocol-grid{grid-template-columns:1fr;}
+  .stat-row{flex-direction:column;}
+}
+
+@media print{
+  body{background:#fff; padding:0;}
+  .steps, .btn-row, .footer-actions, .no-print{display:none !important;}
+  .card{border:none; box-shadow:none; padding:0;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Zonas de entrenamiento</h1>
+    <p>Test de rampa + test de 1' · Programa indoor 24 semanas</p>
+  </header>
+
+  <div class="steps">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP 1 -->
+    <div class="panel active" id="panel1">
+      <h2>1. Encuentra tu punto de partida</h2>
+
+      <label for="weight">Peso corporal (kg)</label>
+      <input type="number" id="weight" min="1" step="0.1" placeholder="ej. 68" oninput="onWeightChanged()">
+
+      <label for="threshold">Tu umbral o FTP actual (W)</label>
+      <input type="number" id="threshold" min="1" placeholder="ej. 230" oninput="onThresholdChanged()">
+      <div class="hint">Se usa solo para calcular cuánto debe durar el test (umbral ÷ 0,80 ≈ tu potencia aeróbica máxima esperada) — no afecta a tus zonas.</div>
+      <div class="link-toggle" id="fallbackToggleText" onclick="toggleFallback()">No sé mi umbral →</div>
+
+      <div class="fallback-block" id="fallbackBlock" style="display:none;">
+        <label>Sexo</label>
+        <div class="pill-row">
+          <label class="pill"><input type="radio" name="sex" value="M" checked onchange="applyFallback()"> Hombre</label>
+          <label class="pill"><input type="radio" name="sex" value="F" onchange="applyFallback()"> Mujer</label>
+        </div>
+        <label for="level">Nivel</label>
+        <select id="level" onchange="applyFallback()">
+          <option value="1.4">Sedentario</option>
+          <option value="2.3" selected>Recreativo</option>
+          <option value="2.9">Intermedio</option>
+          <option value="3.5">Entrenado</option>
+          <option value="4.2">Competidor</option>
+        </select>
+        <div class="hint">Estimamos tu umbral con tu peso y nivel. Puedes ajustarlo a mano en el campo de arriba.</div>
+      </div>
+
+      <label>Protocolo</label>
+      <div class="protocol-grid" id="protocolGrid">
+        <div class="protocol-card" data-inc="10" onclick="selectProtocol(10)">
+          <div class="w">10 W</div>
+          <div class="label">por minuto</div>
+          <div class="tag">Recomendado</div>
+        </div>
+        <div class="protocol-card" data-inc="20" onclick="selectProtocol(20)">
+          <div class="w">20 W</div>
+          <div class="label">por minuto</div>
+          <div class="tag">Recomendado</div>
+        </div>
+        <div class="protocol-card" data-inc="25" onclick="selectProtocol(25)">
+          <div class="w">25 W</div>
+          <div class="label">por minuto</div>
+          <div class="tag">Recomendado</div>
+        </div>
+      </div>
+
+      <label for="start">Empieza el test en (W)</label>
+      <input type="number" id="start" oninput="onStartManuallyEdited()">
+      <div class="hint">Mínimo 80 W, y nunca por encima del 60% de tu umbral — si no, la rampa no tiene recorrido real.</div>
+      <div class="link-toggle" onclick="resetStart()">Recalcular sugerencia →</div>
+
+      <div class="duration-box" id="durationBox">
+        <div class="duration-time" id="durationTime">—</div>
+        <div class="duration-msg" id="durationMsg">Añade tu peso y tu umbral para ver cuánto debería durar el test.</div>
+      </div>
+
+      <div class="error-msg" id="err1">Selecciona el protocolo y añade tu peso para continuar.</div>
+
+      <div class="btn-row">
+        <button class="btn-primary" id="continueBtn" onclick="goToStep2()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="panel" id="panel2">
+      <h2>2. Resultado del test</h2>
+
+      <label for="lastStep">Último escalón que completaste entero (W)</label>
+      <input type="number" id="lastStep" min="0" placeholder="ej. 240">
+      <div class="hint">La potencia absoluta del último minuto completo, según tu ciclocomputador o rodillo — no el %FTP de la pantalla.</div>
+
+      <label for="seconds">Segundos aguantados del siguiente escalón antes de parar</label>
+      <input type="number" id="seconds" min="0" max="59" placeholder="0–59">
+
+      <label for="hrMax">FC máxima alcanzada en el test (ppm)</label>
+      <input type="number" id="hrMax" min="0" placeholder="ej. 182">
+
+      <label class="checkbox-label" style="margin-top:22px;">
+        <input type="checkbox" id="hasP1" onchange="toggleP1()">
+        También hice el test de 1' a tope
+      </label>
+      <div class="p1-wrap" id="p1wrap">
+        <label for="p1">Potencia media mantenida durante el minuto (W)</label>
+        <input type="number" id="p1" min="0" placeholder="ej. 410">
+      </div>
+
+      <div class="error-msg" id="err2">Revisa los datos del test de rampa (escalón, segundos y FC máxima).</div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(1)">← Atrás</button>
+        <button class="btn-primary" onclick="calculate()">Calcular zonas →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="panel" id="panel3">
+      <h2>3. Tus zonas</h2>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="num" id="outP6">—</div>
+          <div class="lbl">Potencia aeróbica máxima (MAP)</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="outFtp">—</div>
+          <div class="lbl">FTP para TrainingPeaks</div>
+        </div>
+        <div class="stat amber">
+          <div class="num" id="outVo2">—</div>
+          <div class="lbl">VO2máx (ml/min/kg)</div>
+        </div>
+      </div>
+      <div class="formula-note" id="ftpNote"></div>
+      <div class="formula-note">VO2máx = 16,61 + 8,87 × (potencia aeróbica máxima en W/kg)</div>
+
+      <table>
+        <caption>Zonas de potencia</caption>
+        <thead>
+          <tr><th>Zona</th><th>Rango (W)</th><th></th></tr>
+        </thead>
+        <tbody id="powerZonesBody"></tbody>
+      </table>
+
+      <table>
+        <caption>Zonas de frecuencia cardíaca</caption>
+        <thead>
+          <tr><th>Zona</th><th>Rango (ppm)</th><th>% FC máx</th></tr>
+        </thead>
+        <tbody id="hrZonesBody"></tbody>
+      </table>
+
+      <div id="anaerobicSection"></div>
+
+      <div class="footer-actions no-print">
+        <button class="btn-secondary" onclick="goStep(1)">← Editar datos</button>
+        <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let protocol = null;
+let userSetProtocol = false;
+let userSetStart = false;
+
+function toggleFallback(){
+  const block = document.getElementById('fallbackBlock');
+  const showing = block.style.display === 'block';
+  block.style.display = showing ? 'none' : 'block';
+  document.getElementById('fallbackToggleText').textContent = showing ? 'No sé mi umbral →' : 'Ocultar';
+  if(!showing) applyFallback();
+}
+
+function applyFallback(){
+  const weight = parseFloat(document.getElementById('weight').value);
+  if(isNaN(weight) || weight <= 0) return;
+  const sex = document.querySelector('input[name="sex"]:checked').value;
+  const mult = parseFloat(document.getElementById('level').value);
+  let est = mult * weight;
+  if(sex === 'F') est *= 0.85;
+  document.getElementById('threshold').value = Math.round(est);
+  onThresholdChanged();
+}
+
+function predictedP6(){
+  const threshold = parseFloat(document.getElementById('threshold').value);
+  if(isNaN(threshold) || threshold <= 0) return null;
+  return threshold / 0.80;
+}
+
+function recommendProtocol(p6){
+  if(p6 < 200) return 10;
+  if(p6 <= 350) return 20;
+  return 25;
+}
+
+function highlightProtocol(inc, isAuto){
+  document.querySelectorAll('.protocol-card').forEach(c=>{
+    const match = parseInt(c.dataset.inc) === inc;
+    c.classList.toggle('selected', match);
+    c.querySelector('.tag').style.display = (match && isAuto) ? 'block' : 'none';
+  });
+}
+
+function onWeightChanged(){
+  const block = document.getElementById('fallbackBlock');
+  if(block.style.display === 'block') applyFallback();
+  else updateDuration();
+}
+
+function onThresholdChanged(){
+  const p6 = predictedP6();
+  if(p6 !== null){
+    if(!userSetProtocol){
+      protocol = recommendProtocol(p6);
+      highlightProtocol(protocol, true);
+    }
+    if(!userSetStart){
+      suggestStart(p6);
+    }
+  }
+  updateDuration();
+}
+
+function selectProtocol(inc){
+  protocol = inc;
+  userSetProtocol = true;
+  highlightProtocol(inc, false);
+  const p6 = predictedP6();
+  if(p6 !== null && !userSetStart){
+    suggestStart(p6);
+  }
+  updateDuration();
+}
+
+const MIN_START = 80;          // nunca empezar por debajo de esto, sea cual sea el umbral
+const MAX_START_RATIO = 0.60;  // el inicio no puede pasar de este % del umbral — si no, apenas hay rampa
+
+function maxStartFor(threshold){
+  return (!isNaN(threshold) && threshold > 0) ? threshold * MAX_START_RATIO : Infinity;
+}
+
+function suggestStart(p6){
+  const threshold = parseFloat(document.getElementById('threshold').value);
+  const maxStart = maxStartFor(threshold);
+  const target = p6 - 10*protocol; // apunta a ~10 min de rampa
+  let s;
+
+  if(target > maxStart){
+    // redondea hacia abajo para no pasarse nunca del techo
+    s = Math.floor(maxStart / protocol) * protocol;
+  } else if(target < MIN_START){
+    // redondea hacia arriba para no quedarse nunca por debajo del suelo
+    s = Math.ceil(MIN_START / protocol) * protocol;
+  } else {
+    s = Math.round(target / protocol) * protocol;
+  }
+
+  if(s < protocol) s = protocol;
+  document.getElementById('start').value = s;
+}
+
+function onStartManuallyEdited(){
+  userSetStart = true;
+  updateDuration();
+}
+
+function resetStart(){
+  userSetStart = false;
+  const p6 = predictedP6();
+  if(p6 !== null && protocol) suggestStart(p6);
+  updateDuration();
+}
+
+function updateDuration(){
+  const box = document.getElementById('durationBox');
+  const timeEl = document.getElementById('durationTime');
+  const msgEl = document.getElementById('durationMsg');
+  const continueBtn = document.getElementById('continueBtn');
+  const p6 = predictedP6();
+  const start = parseFloat(document.getElementById('start').value);
+
+  box.classList.remove('duration-ideal','duration-warn','duration-block');
+
+  if(p6 === null || isNaN(start) || !protocol){
+    timeEl.textContent = '—';
+    msgEl.textContent = 'Añade tu peso, tu umbral y elige un protocolo para ver cuánto debería durar el test.';
+    continueBtn.disabled = false;
+    return;
+  }
+
+  const minutes = (p6 - start) / protocol;
+  const threshold = parseFloat(document.getElementById('threshold').value);
+  const maxStart = maxStartFor(threshold);
+
+  if(minutes <= 0){
+    timeEl.textContent = '—';
+    box.classList.add('duration-block');
+    msgEl.textContent = 'La potencia de inicio es igual o mayor que tu umbral estimado — bájala.';
+    continueBtn.disabled = true;
+    return;
+  }
+
+  const mm = Math.floor(minutes);
+  const ss = Math.round((minutes - mm) * 60);
+  timeEl.textContent = `${mm}:${String(ss).padStart(2,'0')} min`;
+
+  if(start < MIN_START){
+    box.classList.add('duration-block');
+    msgEl.textContent = `Demasiado bajo — empieza al menos en ${MIN_START} W, aunque la duración salga "ideal".`;
+    continueBtn.disabled = true;
+  } else if(start > maxStart){
+    box.classList.add('duration-block');
+    msgEl.textContent = `Demasiado cerca de tu umbral (más del ${Math.round(MAX_START_RATIO*100)}%) — apenas quedaría rampa real. Bájalo.`;
+    continueBtn.disabled = true;
+  } else if(minutes > 14){
+    box.classList.add('duration-block');
+    msgEl.textContent = "Demasiado largo (más de 14'). Sube la potencia de inicio o elige un protocolo con incrementos mayores.";
+    continueBtn.disabled = true;
+  } else if(minutes >= 8 && minutes <= 12){
+    box.classList.add('duration-ideal');
+    msgEl.textContent = 'Duración ideal para el test.';
+    continueBtn.disabled = false;
+  } else if(minutes < 8){
+    box.classList.add('duration-warn');
+    msgEl.textContent = "Un poco corto. Baja la potencia de inicio si quieres acercarte a los 8-12'.";
+    continueBtn.disabled = false;
+  } else {
+    box.classList.add('duration-warn');
+    msgEl.textContent = "Un poco largo. Sube la potencia de inicio si quieres acercarte a los 8-12'.";
+    continueBtn.disabled = false;
+  }
+}
+
+function toggleP1(){
+  const checked = document.getElementById('hasP1').checked;
+  document.getElementById('p1wrap').style.display = checked ? 'block' : 'none';
+}
+
+function goStep(n){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+n).classList.add('active');
+  for(let i=1;i<=3;i++){
+    const dot = document.getElementById('dot'+i);
+    dot.classList.remove('active','done');
+    if(i < n) dot.classList.add('done');
+    else if(i === n) dot.classList.add('active');
+  }
+}
+
+function goToStep2(){
+  const weight = parseFloat(document.getElementById('weight').value);
+  const err = document.getElementById('err1');
+  if(!protocol || isNaN(weight) || weight <= 0){
+    err.style.display = 'block';
+    return;
+  }
+  if(document.getElementById('continueBtn').disabled){
+    return;
+  }
+  err.style.display = 'none';
+  goStep(2);
+}
+
+function calculate(){
+  const lastStep = parseFloat(document.getElementById('lastStep').value);
+  const seconds = parseFloat(document.getElementById('seconds').value);
+  const hrMax = parseFloat(document.getElementById('hrMax').value);
+  const hasP1 = document.getElementById('hasP1').checked;
+  const p1 = hasP1 ? parseFloat(document.getElementById('p1').value) : null;
+
+  const err = document.getElementById('err2');
+  if(isNaN(lastStep) || lastStep < 0 || isNaN(seconds) || seconds < 0 || seconds > 59 || isNaN(hrMax) || hrMax <= 0){
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+
+  const weight = parseFloat(document.getElementById('weight').value);
+
+  // P6 = potencia aeróbica máxima (MAP)
+  const p6 = lastStep + (seconds/60) * protocol;
+  const vo2 = 16.61 + 8.87 * (p6/weight);
+
+  // FTP para TrainingPeaks: 80% de P6 por defecto (coherente con tu propia
+  // fórmula CEDAR de MLSS = 80% P6), ajustado si hay test de 1'.
+  // R = P1/P6 (perfil anaeróbico). R_REF = 1,52 es la media real de tus 72
+  // atletas (P1/P6, desviación típica 0,12) — no una estimación de la literatura.
+  // Por cada 0,01 que R se aleje de esa referencia, el % se mueve 0,12 puntos
+  // en sentido contrario (más anaeróbico → % más bajo; más "diésel" → % más alto),
+  // con tope en 77-83%.
+  const FTP_BASE_PCT = 80;
+  const FTP_R_REF = 1.52;
+  const FTP_SLOPE = 12;
+  const FTP_MIN_PCT = 77;
+  const FTP_MAX_PCT = 83;
+  let ftpPct = FTP_BASE_PCT;
+  let ftpNote = 'FTP = 80% de la potencia aeróbica máxima (coincide con tu fórmula CEDAR de MLSS; sin test de 1\' para afinarlo).';
+  if(hasP1 && !isNaN(p1) && p1 > p6){
+    const ratio = p1 / p6;
+    ftpPct = FTP_BASE_PCT - FTP_SLOPE * (ratio - FTP_R_REF);
+    ftpPct = Math.max(FTP_MIN_PCT, Math.min(FTP_MAX_PCT, ftpPct));
+    ftpNote = `FTP ajustado a tu perfil anaeróbico (P1/P6 = ${ratio.toFixed(2)}) → ${ftpPct.toFixed(1)}% de la potencia aeróbica máxima, en vez del 80% estándar.`;
+  }
+  const ftp = p6 * (ftpPct/100);
+
+  // anclas de potencia
+  const mlss = 0.80 * p6;
+  const p180 = 0.64 * p6;   // aproximado, 63-65% P6
+  const p120 = 0.69 * p6;   // aproximado, 67-71% P6
+  const a3top = (p6 + mlss) / 2; // punto medio MLSS-P6, ~90% P6
+  const a0top = 0.45 * p6;
+  const a1bottom = 0.46 * p6;
+
+  // margen hacia arriba: el límite superior de A1/A2/A3/VO2máx es un ancla teórica,
+  // no un techo real — se le da un poco de recorrido por encima (3% de P6) en vez
+  // de cortar la zona en seco justo en ese número.
+  // A2/A3 y A3/VO2máx comparten frontera (MLSS y el punto medio, respectivamente),
+  // así que el margen se encadena: el máximo de una es el mínimo de la siguiente,
+  // para no dejar ni huecos ni solapes. A1 no comparte frontera con A2 (P180 y P120
+  // son anclas distintas), así que ahí el margen no toca el mínimo de A2.
+  const TOP_MARGIN = 0.03 * p6;
+  const p180Top = p180 + TOP_MARGIN;      // techo de A1
+  const a2Top = mlss + TOP_MARGIN;        // techo de A2 = suelo de A3
+  const a3Top = a3top + TOP_MARGIN;       // techo de A3 = suelo de VO2máx
+  const p6Top = p6 + TOP_MARGIN;          // techo de VO2máx
+
+  document.getElementById('outP6').textContent = Math.round(p6) + ' W';
+  document.getElementById('outFtp').textContent = Math.round(ftp) + ' W';
+  document.getElementById('outVo2').textContent = vo2.toFixed(1);
+  document.getElementById('ftpNote').textContent = ftpNote;
+
+  const r = Math.round;
+  const powerRows = [
+    ['A0 · Recuperación', `< ${r(a0top)}`, ''],
+    ['A1 · Fondo', `${r(a1bottom)}–${r(p180Top)}`, '≈ Z2–Z3 de pulso'],
+    ['A2 · Umbral', `${r(p120)}–${r(a2Top)}`, ''],
+    ['A3 · Supraumbral', `${r(a2Top)}–${r(a3Top)}`, ''],
+    ['VO2máx', `${r(a3Top)}–${r(p6Top)}`, ''],
+  ];
+
+  let powerHtml = '';
+  powerRows.forEach(row=>{
+    powerHtml += `<tr><td class="zone-name">${row[0]}</td><td>${row[1]} W</td><td class="zone-note">${row[2]}</td></tr>`;
+  });
+  document.getElementById('powerZonesBody').innerHTML = powerHtml;
+
+  // FC
+  const hrZones = [
+    ['Z1', 0.50, 0.63],
+    ['Z2', 0.64, 0.77],
+    ['Z3', 0.78, 0.84],
+    ['Z4', 0.85, 0.92],
+    ['Z5', 0.93, 1.00],
+  ];
+  let hrHtml = '';
+  hrZones.forEach(z=>{
+    const lo = r(hrMax*z[1]);
+    const hi = r(hrMax*z[2]);
+    hrHtml += `<tr><td class="zone-name">${z[0]}</td><td>${lo}–${hi}</td><td class="zone-note">${Math.round(z[1]*100)}–${Math.round(z[2]*100)}%</td></tr>`;
+  });
+  document.getElementById('hrZonesBody').innerHTML = hrHtml;
+
+  // Anaeróbicas
+  const anaerobicDiv = document.getElementById('anaerobicSection');
+  if(hasP1 && !isNaN(p1) && p1 > 0){
+    if(p1 <= p6){
+      anaerobicDiv.innerHTML = `<div class="hint" style="margin-bottom:22px;">La potencia del test de 1' (${r(p1)} W) no supera tu potencia aeróbica máxima — revisa el dato si no es intencionado. No se muestran zonas anaeróbicas.</div>`;
+    } else {
+      // Ancladas en P1, no en P6: láctica = 90%-150% de P1, aláctica = >150% de P1.
+      // Suelo protegido con max(·, P6) por si un P1 muy poco anaeróbico dejara el 90%
+      // por debajo de la propia potencia aeróbica máxima.
+      const lacticaLow = Math.max(0.9 * p1, p6);
+      const lacticaHigh = 1.5 * p1;
+      anaerobicDiv.innerHTML = `
+        <table>
+          <caption>Zonas anaeróbicas</caption>
+          <thead><tr><th>Zona</th><th>Rango (W)</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="zone-name">Anaeróbica láctica</td><td>${r(lacticaLow)}–${r(lacticaHigh)}</td><td class="zone-note">90–150% de P1 (${r(p1)} W)</td></tr>
+            <tr><td class="zone-name">Anaeróbica aláctica</td><td>&gt; ${r(lacticaHigh)}</td><td class="zone-note">150% de P1</td></tr>
+          </tbody>
+        </table>`;
+    }
+  } else {
+    anaerobicDiv.innerHTML = `<div class="hint" style="margin-bottom:22px;">Sin test de 1', no se muestran zonas anaeróbicas.</div>`;
+  }
+
+  goStep(3);
+}
+</script>
+</body>
+</html>
