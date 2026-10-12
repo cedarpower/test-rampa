@@ -70,6 +70,34 @@ header p{
 .step-dot.active{background:var(--amber);}
 .step-dot.done{background:var(--pine-light);}
 
+.val-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:24px;
+}
+
+.val-tab{
+  flex:1;
+  font-family:'Archivo', Arial, sans-serif;
+  font-weight:600;
+  font-size:0.88rem;
+  padding:11px 10px;
+  border-radius:9px;
+  border:1.5px solid var(--line);
+  background:var(--paper);
+  color:var(--muted);
+  cursor:pointer;
+  transition:border-color .15s, background .15s, color .15s;
+}
+
+.val-tab:hover{border-color:var(--amber-light);}
+
+.val-tab.active{
+  border-color:var(--amber);
+  background:var(--pine);
+  color:#fff;
+}
+
 .card{
   background:var(--paper);
   border:1px solid var(--line);
@@ -400,7 +428,7 @@ td.zone-note{color:var(--muted); font-size:0.8rem;}
 
 @media print{
   body{background:#fff; padding:0;}
-  .steps, .btn-row, .footer-actions, .no-print{display:none !important;}
+  .steps, .val-tabs, .btn-row, .footer-actions, .no-print{display:none !important;}
   .card{border:none; box-shadow:none; padding:0;}
 }
 </style>
@@ -412,6 +440,13 @@ td.zone-note{color:var(--muted); font-size:0.8rem;}
     <h1>Zonas de entrenamiento</h1>
     <p>Test de rampa + test de 1' · Programa indoor 24 semanas</p>
   </header>
+
+  <div class="val-tabs">
+    <button class="val-tab active" id="tabV1" onclick="switchValoracion(1)">Valoración 1</button>
+    <button class="val-tab" id="tabV2" onclick="switchValoracion(2)">Valoración 2</button>
+  </div>
+
+  <div id="valoracion1">
 
   <div class="steps">
     <div class="step-dot active" id="dot1"></div>
@@ -563,9 +598,91 @@ td.zone-note{color:var(--muted); font-size:0.8rem;}
     </div>
 
   </div>
+
+  </div>
+
+  <div id="valoracion2" style="display:none;">
+    <div class="card">
+      <h2>Valoración 2 · mitad de programa</h2>
+      <p class="hint" style="margin:-6px 0 18px;">Test de 12' a tope, combinado con el MAP de tu Valoración 1, para sacar tu potencia crítica (CP) y un FTP actualizado para TrainingPeaks de cara a la segunda mitad del programa.</p>
+
+      <label for="v2map">MAP (potencia aeróbica máxima) de tu Valoración 1 (W)</label>
+      <input type="number" id="v2map" min="1" placeholder="ej. 290">
+      <div class="hint">El mismo número que te dio la Valoración 1 — no se repite el test de rampa.</div>
+
+      <label for="v2p12">Potencia media mantenida en el test de 12' (W)</label>
+      <input type="number" id="v2p12" min="1" placeholder="ej. 245">
+      <div class="hint">Esfuerzo máximo sostenido 12 minutos, con ritmo lo más uniforme posible (como un contrarreloj, no un ataque inicial seguido de caída).</div>
+
+      <div class="error-msg" id="errV2">Revisa los datos: el MAP y la potencia del test de 12' deben ser positivos, y la del test de 12' debe ser menor que tu MAP — si no, el test de 12' no fue suficientemente a tope o el MAP no es correcto.</div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="calculateV2()">Calcular CP y FTP →</button>
+      </div>
+
+      <div id="v2results" style="display:none; margin-top:24px;">
+        <div class="stat-row">
+          <div class="stat">
+            <div class="num" id="outCp">—</div>
+            <div class="lbl">Potencia crítica (CP)</div>
+          </div>
+          <div class="stat amber">
+            <div class="num" id="outFtp2">—</div>
+            <div class="lbl">FTP actualizado para TrainingPeaks</div>
+          </div>
+        </div>
+        <div class="formula-note">CP = (trabajo₁₂ − trabajo₆) / (12 − 6) — modelo de potencia crítica de 2 parámetros de Monod y Scherrer, el mismo que usa Skiba, con el MAP de la Valoración 1 como punto de 6' y el test de 12' como segundo punto · FTP = CP × 0,98</div>
+        <div class="footer-actions no-print">
+          <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
+function switchValoracion(n){
+  document.getElementById('valoracion1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('valoracion2').style.display = n === 2 ? 'block' : 'none';
+  document.getElementById('tabV1').classList.toggle('active', n === 1);
+  document.getElementById('tabV2').classList.toggle('active', n === 2);
+}
+
+function calculateV2(){
+  const map = parseFloat(document.getElementById('v2map').value);
+  const p12 = parseFloat(document.getElementById('v2p12').value);
+  const err = document.getElementById('errV2');
+  const results = document.getElementById('v2results');
+
+  if(isNaN(map) || map <= 0 || isNaN(p12) || p12 <= 0 || p12 >= map){
+    err.style.display = 'block';
+    results.style.display = 'none';
+    return;
+  }
+  err.style.display = 'none';
+
+  // Modelo de potencia crítica de 2 parámetros de Monod y Scherrer (1965),
+  // el mismo que recomienda Phil Skiba para este cálculo: el trabajo
+  // realizado en un esfuerzo máximo es lineal con el tiempo,
+  //   trabajo(t) = CP·t + W'
+  // Con dos esfuerzos máximos a distinta duración se resuelve CP despejando
+  // ese sistema de 2 ecuaciones:
+  //   CP = (trabajo2 − trabajo1) / (t2 − t1)
+  // Punto 1: el MAP de la Valoración 1, tratado como el esfuerzo máximo
+  // sostenible a t1 = 6'. Punto 2: el test de 12' (t2 = 12').
+  const t1 = 6, t2 = 12;
+  const work1 = map * t1;
+  const work2 = p12 * t2;
+  const cp = (work2 - work1) / (t2 - t1);
+  const FTP2_RATIO = 0.98; // ver nota de la literatura en el chat
+  const ftp2 = cp * FTP2_RATIO;
+
+  document.getElementById('outCp').textContent = Math.round(cp) + ' W';
+  document.getElementById('outFtp2').textContent = Math.round(ftp2) + ' W';
+  results.style.display = 'block';
+}
+
 let protocol = null;
 let userSetProtocol = false;
 let userSetStart = false;
